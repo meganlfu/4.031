@@ -4,6 +4,8 @@ import datetime
 import sys
 import time
 from PIL import Image
+import cv2
+import numpy as np
 
 dateRelevance = False
 
@@ -84,30 +86,44 @@ def getCurrentDateandTime():
 	betterDate = justDate.replace ("-", ":")
 	return (betterDate,time)
 
-def showPhoto(dateRelevance):
+def getPhoto(dateRelevance,tags):
+	'''returns the name of the photo, or None if no photo matches the tag'''
 	#if photo should be specific to date and time
-	tags = getTags()
 	if dateRelevance == True:
 		cleanTags = parseTagsDateTime(tags)
 		dateTime = getCurrentDateandTime()
 		#if the data and time match, exclude the year
 		if dateTime in cleanTags:
-			image = Image.open(cleanTags[dateTime])
-			image.show()
+			return cleanTags[dateTime]
 		else:
-			pass
-
+			return None
+	#just show photo based on time, not on date as well
 	else:
 		cleanTags = parseTagsTime(tags)
 		#current time
-		time = getCurrentTimewOSecond()
-		#for testing
-		if time in cleanTags:
-			image = Image.open(cleanTags[time])
-			image.show()
+		currentTime = getCurrentTimewOSecond()
+		#testing
+		#currentTime = "04:04"
+		if currentTime in cleanTags:
+			return cleanTags[currentTime]
 		else:
-			pass
+			return None
 
+def showPhoto(path):
+	'''displays the image and then closes it afte 60 seconds'''
+	img = cv2.imread(path)
+	#create a standard window for everything to be shown through
+	cv2.namedWindow('fu',cv2.WINDOW_NORMAL)
+	cv2.resizeWindow('fu', 600,600)
+	cv2.imshow('fu', img)
+	#keeps the image open for 60 seconds
+	cv2.waitKey(1)
+	time.sleep(60)
+
+def displayCameraFeed():
+	cameraPort = 0
+	testFrames = 30
+	camera = cv2.VideoCapture(cameraPort)
 
 def main(args):
     print args
@@ -117,10 +133,15 @@ if __name__ == '__main__':
 	main(sys.argv)
 	#run every 60 seconds
 	while True:
-		showPhoto(dateRelevance)
-		timE = getCurrentTimewOSecond()
-		print timE
-		time.sleep(60)
+		tags = getTags()
+		currentTime = getCurrentTimewOSecond()
+		print currentTime
+		currentPhoto = getPhoto(dateRelevance,tags)
+		if currentPhoto != None:
+			showPhoto(currentPhoto)
+		else:
+			print "no photo, use camera"
+			time.sleep(60)
 	#print cleanTags
 
 #print imageTags
