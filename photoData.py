@@ -121,9 +121,27 @@ def showPhoto(path):
 	time.sleep(60)
 
 def displayCameraFeed():
+	'''takes an image from webcam and then returns path to the image'''
 	cameraPort = 0
 	testFrames = 30
+	#initialize the camera pot
 	camera = cv2.VideoCapture(cameraPort)
+	#allow for adjustments
+	for i in xrange(testFrames):
+		temp = get_image(camera)
+	print("Taking image...")
+	# Take the actual image we want to keep
+	camera_capture = get_image(camera)
+	file = "derp.jpg"
+	cv2.imwrite(file, camera_capture)
+	#release camera
+	del(camera)
+	return file
+
+def get_image(camera):
+	'''helper function for displayingCameraImage'''
+	retval, im = camera.read()
+ 	return im
 
 def main(args):
     print args
@@ -140,6 +158,8 @@ if __name__ == '__main__':
 		if currentPhoto != None:
 			showPhoto(currentPhoto)
 		else:
+			currentPhoto = displayCameraFeed()
+			showPhoto(currentPhoto)
 			print "no photo, use camera"
 			time.sleep(60)
 	#print cleanTags
